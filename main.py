@@ -43,7 +43,6 @@ def main():
         print(f"\nResponse tokens: {response_tokens}\n")
         print(response.text)
     else:
-        print(f"\nUser prompt: {args.user_prompt}")
         print(f"\n{response.text}\n")
 
 
