@@ -8,6 +8,8 @@ wheels/
 .env
 .git
 test_get_files_info.py
+functions/backup.py
+functions/__pycache__
 
 # Virtual environments
 .venv

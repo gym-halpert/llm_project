@@ -25,20 +25,23 @@ def get_files_info(working_directory, directory="."):
 
         if not valid_target_dir:
             print(f"Result for '{directory}' directory:")
-            print(f'    Error: Cannot list "{directory}" as it is outside the permitted working directory')
-            return
+            return f'    Error: Cannot list "{directory}" as it is outside the permitted working directory'
 
         if not dir_test:
             print(f"Result for '{directory}' directory:")
-            print(f'    Error: "{directory}" is not a directory')
-            return
+            return f'    Error: "{directory}" is not a directory'
 
         if listed_target.index(item) == 0:
+            file_path = os.path.normpath(os.path.join(target_dir, item.strip("'")))
+            size = os.path.getsize(file_path)
+            is_dir = os.path.isdir(file_path)
             print(f"Result for '{directory}' directory:")
-        file_path = os.path.normpath(os.path.join(target_dir, item.strip("'")))
-        size = os.path.getsize(file_path)
-        is_dir = os.path.isdir(file_path)
-       	print(f"  - {item}: file_size={size} bytes, is_dir={is_dir}")
+            print(f"  - {item}: file_size={size} bytes, is_dir={is_dir}")
+        else:
+            file_path = os.path.normpath(os.path.join(target_dir, item.strip("'")))
+            size = os.path.getsize(file_path)
+            is_dir = os.path.isdir(file_path)
+            print(f"  - {item}: file_size={size} bytes, is_dir={is_dir}")
 
 #    except ValueError as v:
 #        return v
