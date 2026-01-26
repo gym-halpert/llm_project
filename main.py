@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 from prompts import system_prompt
+from call_function import available_functions
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
@@ -19,14 +20,11 @@ args = parser.parse_args()
 messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
 
 def main():
-    try:
-        api_key
-    except NameError:
-        raise RuntimeError("API key not found...")
-        sys.exit(1)
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY environment variable not set")
 
     response = client.models.generate_content(
-    model='gemini-2.5-flash', contents=messages, config=types.GenerateContentConfig(system_instruction=system_prompt)
+    model='gemini-2.5-flash', contents=messages, config=types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt)
     )
 
     try:
@@ -42,10 +40,14 @@ def main():
         print(f"\nUser prompt: {args.user_prompt}")
         print(f"\nPrompt tokens: {prompt_tokens}")
         print(f"\nResponse tokens: {response_tokens}\n")
-        print(response.text)
-    else:
-        print(f"\n{response.text}\n")
 
+    if not response.function_calls:
+        print(f"Response: {response.text}")
+        return
+
+    for function_call in response.function_calls:
+        print(f'Calling function: {function_call.name}({function_call.args})')
+        print(f"Response: {response.text}")
 
 if __name__ == "__main__":
     main()
