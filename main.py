@@ -6,6 +6,7 @@ from call_function import available_functions
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from call_function import call_function
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -31,23 +32,32 @@ def main():
         response.usage_metadata
     except ValueError:
         raise RuntimeError("No metadata found...")
-        sys.exit(1)
 
     prompt_tokens = response.usage_metadata.prompt_token_count
     response_tokens = response.usage_metadata.candidates_token_count
-
-    if args.verbose:
-        print(f"\nUser prompt: {args.user_prompt}")
-        print(f"\nPrompt tokens: {prompt_tokens}")
-        print(f"\nResponse tokens: {response_tokens}\n")
 
     if not response.function_calls:
         print(f"Response: {response.text}")
         return
 
-    for function_call in response.function_calls:
-        print(f'Calling function: {function_call.name}({function_call.args})')
-        print(f"Response: {response.text}")
+    func_results_list = []
+
+    for function in response.function_calls:
+        called = call_function(function, verbose=args.verbose)
+
+        if len(called.parts) == 0:
+            raise RuntimeError(f'Error: Parts list is empty')
+
+        if not called.parts[0].function_response:
+            raise RuntimeError(f'Error: Function response object is None')
+
+        if not called.parts[0].function_response.response:
+            raise RuntimeError(f'Error: Function response is None')
+
+        func_results_list.append(called.parts[0])
+
+        if args.verbose:
+            print(f"-> {called.parts[0].function_response.response}")
 
 if __name__ == "__main__":
     main()
